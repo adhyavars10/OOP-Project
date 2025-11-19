@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>💵 Add Income - Finance Tracker</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <!-- Navigation Bar -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <h1 class="logo">💰 Finance Tracker</h1>
+                <ul class="nav-links">
+                    <li><a href="index.html">Dashboard</a></li>
+                    <li><a href="add-expense.html">Add Expense</a></li>
+                    <li>
+                        <a href="add-income.html" class="active">Add Income</a>
+                    </li>
+                    <li><a href="expenses.html">View Expenses</a></li>
+                    <li><a href="income.html">View Income</a></li>
+                    <li><a href="logs.html">Logs</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container">
+            <div class="page-header">
+                <h2>💵 Add New Income</h2>
+                <p>Record your income and track your earnings</p>
+            </div>
+
+            <!-- Income Form -->
+            <div class="form-card">
+                <form id="incomeForm" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label for="amount">Amount (AED) *</label>
+                        <input
+                            type="number"
+                            id="amount"
+                            name="amount"
+                            step="0.01"
+                            min="0.01"
+                            required
+                            placeholder="Enter amount"
+                            class="form-input"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="source">Source *</label>
+                        <input
+                            type="text"
+                            id="source"
+                            name="source"
+                            required
+                            placeholder="Enter income source (e.g., Salary, Freelance, Investment)"
+                            class="form-input"
+                        />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description *</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows="4"
+                            required
+                            placeholder="Enter income description (e.g., Monthly salary from company)"
+                            class="form-textarea"
+                        ></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">
+                            💾 Add Income
+                        </button>
+                        <a href="income.html" class="btn btn-secondary">
+                            ❌ Cancel
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Status Message -->
+                <div
+                    id="statusMessage"
+                    class="status-message"
+                    style="display: none"
+                ></div>
+            </div>
+
+            <!-- Income Statistics Preview -->
+            <div class="section-card">
+                <h3>📊 Quick Preview - Income Statistics</h3>
+                <div class="quick-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">This Month's Income:</span>
+                        <span class="stat-value" id="monthTotal">AED 0.00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Income:</span>
+                        <span class="stat-value" id="totalIncome"
+                            >AED 0.00</span
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Income Tips -->
+            <div class="info-card">
+                <h4>💡 Income Tracking Tips</h4>
+                <ul>
+                    <li>
+                        Record all sources of income including salary, freelance
+                        work, and investments
+                    </li>
+                    <li>
+                        Be specific with the source to better understand your
+                        income streams
+                    </li>
+                    <li>
+                        Include details like project name or client in the
+                        description
+                    </li>
+                    <li>
+                        Regular tracking helps you identify your most profitable
+                        income sources
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Finance Tracker - OOP Project | BITS Pilani</p>
+            <div
+                style="
+                    margin-top: 15px;
+                    padding-top: 15px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.1);
+                    font-size: 0.9em;
+                "
+            >
+                <p style="margin: 5px 0">
+                    <strong>OOP Group Project - 2025-2026</strong>
+                </p>
+                <p style="margin: 5px 0"><strong>Team Members:</strong></p>
+                <p style="margin: 3px 0">
+                    Harshwardhan Mohadikar - 2024ADPS0004U
+                </p>
+                <p style="margin: 3px 0">Adhya Varshney - 2024A7PS0197U</p>
+                <p style="margin: 3px 0">Daksh Dawra - 2024A7PS0264U</p>
+                <p style="margin: 3px 0">Anirudh Jain - 2024A7PS0171U</p>
+                <p style="margin: 3px 0">Anish Malhotra - 2024A7PS0226U</p>
+                <p style="margin: 3px 0">Vardhaman Jain - 2024A7PS0229U</p>
+            </div>
+        </footer>
+
+        <script>
+            // CHANGE THIS to your Render.com backend URL
+            const API_URL = "http://localhost:8080";
+
+            // Load statistics on page load
+            window.addEventListener("DOMContentLoaded", function () {
+                loadStatistics();
+            });
+
+            // Handle form submission
+            function handleSubmit(event) {
+                event.preventDefault();
+
+                const form = document.getElementById("incomeForm");
+                const formData = new FormData(form);
+                const statusMessage = document.getElementById("statusMessage");
+
+                // Show loading message
+                statusMessage.style.display = "block";
+                statusMessage.className = "status-message info-message";
+                statusMessage.textContent = "⏳ Adding income...";
+
+                // Convert FormData to URL-encoded string
+                const urlEncodedData = new URLSearchParams(formData).toString();
+
+                fetch(API_URL + "/api/income", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: urlEncodedData,
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            // Show success message
+                            statusMessage.className =
+                                "status-message success-message";
+                            statusMessage.textContent =
+                                "✅ Income added successfully!";
+
+                            // Reset form
+                            form.reset();
+
+                            // Reload statistics
+                            loadStatistics();
+
+                            // Redirect to income page after 2 seconds
+                            setTimeout(() => {
+                                window.location.href = "income.html";
+                            }, 2000);
+                        } else {
+                            throw new Error(
+                                data.message || "Failed to add income",
+                            );
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error:", error);
+                        statusMessage.className =
+                            "status-message error-message";
+                        statusMessage.textContent =
+                            "❌ Error: " + error.message;
+                    });
+            }
+
+            // Load statistics for preview
+            function loadStatistics() {
+                fetch(API_URL + "/api/income")
+                    .then((response) => response.json())
+                    .then((incomeList) => {
+                        if (!incomeList || incomeList.length === 0) {
+                            return;
+                        }
+
+                        const currentMonth = new Date()
+                            .toISOString()
+                            .substring(0, 7);
+
+                        let monthTotal = 0;
+                        let totalIncome = 0;
+
+                        incomeList.forEach((income) => {
+                            totalIncome += income.amount;
+                            if (income.date.startsWith(currentMonth)) {
+                                monthTotal += income.amount;
+                            }
+                        });
+
+                        document.getElementById("monthTotal").textContent =
+                            "AED " + monthTotal.toFixed(2);
+                        document.getElementById("totalIncome").textContent =
+                            "AED " + totalIncome.toFixed(2);
+                    })
+                    .catch((error) => {
+                        console.error("Error loading statistics:", error);
+                    });
+            }
+        </script>
+    </body>
+</html>
