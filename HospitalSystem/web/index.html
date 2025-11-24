@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Hospital System - Login</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="color-scheme" content="light" />
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            body {
+                background: linear-gradient(
+                    135deg,
+                    #4a90d9 0%,
+                    #2c5282 100%
+                ) !important;
+            }
+            .logo-icon {
+                background: linear-gradient(
+                    135deg,
+                    #4a90d9,
+                    #2c5282
+                ) !important;
+                box-shadow: 0 8px 20px rgba(74, 144, 217, 0.4);
+            }
+            .btn-primary {
+                background: linear-gradient(
+                    135deg,
+                    #4a90d9,
+                    #2c5282
+                ) !important;
+            }
+            .message {
+                display: none;
+            }
+            .message.message-error,
+            .message.message-success {
+                display: block;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="card login-card" role="main" aria-labelledby="appTitle">
+                <div class="logo-icon" aria-hidden="true">🏥</div>
+                <h1 id="appTitle">Hospital System</h1>
+                <p class="subtitle">Appointment Management Portal</p>
+
+                <div id="message" class="message" aria-live="polite"></div>
+
+                <form id="loginForm" autocomplete="off" novalidate>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input
+                            id="username"
+                            name="username"
+                            type="text"
+                            placeholder="Enter username"
+                            required
+                            autofocus
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input
+                            id="password"
+                            name="password"
+                            type="password"
+                            placeholder="Enter password"
+                            required
+                        />
+                    </div>
+                    <button type="submit" class="btn-primary">Sign In</button>
+                </form>
+
+                <p class="footer-text" style="margin-top: 16px">
+                    Demo users: <strong>pat1/123</strong> •
+                    <strong>pat2/123</strong> • <strong>doc1/123</strong> •
+                    <strong>doc2/123</strong> • <strong>admin/admin</strong>
+                </p>
+
+                <p
+                    class="footer-text"
+                    style="margin-top: 24px; font-size: 0.85em; opacity: 0.8"
+                >
+                    <strong>OOP PROJECT BY</strong><br />
+                    Adhya Varshney 2024A7PS0197U<br />
+                    Harshwardhan Mohadikar 2024ADPS0004U<br />
+                    Daksh Dawra 2024A7PS0264U<br />
+                    Anish Malhotra 2024A7PS0226U<br />
+                    Vardhaman Jain 2024A7PS0229U<br />
+                    Anirudh Jain 2024A7PS0171U
+                </p>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                const form = document.getElementById("loginForm");
+                const msgBox = document.getElementById("message");
+                const usernameEl = document.getElementById("username");
+                const passwordEl = document.getElementById("password");
+
+                function showMessage(text, type) {
+                    msgBox.textContent = text || "";
+                    msgBox.className = "message";
+                    if (type === "error") {
+                        msgBox.classList.add("message-error");
+                    } else if (type === "success") {
+                        msgBox.classList.add("message-success");
+                    } else {
+                        msgBox.style.background = "#EBF4FF";
+                        msgBox.style.color = "#2C5282";
+                        msgBox.style.border = "1px solid #BEE3F8";
+                        msgBox.style.display = "block";
+                    }
+                }
+
+                function toFormData(obj) {
+                    const parts = [];
+                    for (const k in obj) {
+                        parts.push(
+                            encodeURIComponent(k) +
+                                "=" +
+                                encodeURIComponent(
+                                    obj[k] == null ? "" : obj[k],
+                                ),
+                        );
+                    }
+                    return parts.join("&");
+                }
+
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    const u = (usernameEl.value || "").trim();
+                    const p = (passwordEl.value || "").trim();
+
+                    if (!u || !p) {
+                        showMessage("Enter username and password", "error");
+                        return;
+                    }
+
+                    showMessage("Signing in...", "success");
+
+                    fetch("/api/login", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: toFormData({ username: u, password: p }),
+                    })
+                        .then(async (r) => {
+                            const txt = await r.text();
+                            let obj = null;
+                            try {
+                                obj = JSON.parse(txt);
+                            } catch (_) {
+                                obj = null;
+                            }
+                            return {
+                                ok: r.ok,
+                                status: r.status,
+                                data: obj,
+                                raw: txt,
+                            };
+                        })
+                        .then(function (result) {
+                            const ok = result.ok;
+                            const status = result.status;
+                            const data = result.data;
+
+                            if (!ok && status !== 200) {
+                                showMessage(
+                                    "Server error (" + status + ")",
+                                    "error",
+                                );
+                                return;
+                            }
+                            if (!data || typeof data !== "object") {
+                                showMessage("Bad server response", "error");
+                                return;
+                            }
+                            if (!data.success) {
+                                showMessage("Invalid credentials", "error");
+                                return;
+                            }
+
+                            const role = (data.role || "").toLowerCase();
+                            const name = data.name || "";
+
+                            localStorage.setItem("username", u);
+                            localStorage.setItem("role", role);
+                            localStorage.setItem("name", name);
+
+                            if (role === "patient") {
+                                window.location.href =
+                                    "patient.html?u=" +
+                                    encodeURIComponent(u) +
+                                    "&name=" +
+                                    encodeURIComponent(name);
+                            } else if (role === "doctor") {
+                                window.location.href =
+                                    "doctor.html?u=" +
+                                    encodeURIComponent(u) +
+                                    "&name=" +
+                                    encodeURIComponent(name);
+                            } else if (role === "receptionist") {
+                                window.location.href =
+                                    "receptionist.html?u=" +
+                                    encodeURIComponent(u) +
+                                    "&name=" +
+                                    encodeURIComponent(name);
+                            } else {
+                                showMessage("Unknown role", "error");
+                            }
+                        })
+                        .catch(function () {
+                            showMessage(
+                                "Network error. Please try again.",
+                                "error",
+                            );
+                        });
+                });
+            })();
+        </script>
+    </body>
+</html>

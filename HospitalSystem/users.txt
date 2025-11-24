@@ -1,0 +1,6 @@
+```OOP Project/HospitalSystem/users.txt#L1-5
+pat1,123,patient,Rahul Kumar
+pat2,123,patient,Priya Shah
+doc1,123,doctor,Dr. Smith,Cardiology
+doc2,123,doctor,Dr. Johnson,Neurology
+admin,admin,receptionist,Admin User

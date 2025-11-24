@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Doctor Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            body {
+                background: linear-gradient(
+                    135deg,
+                    #4a90d9 0%,
+                    #2c5282 100%
+                ) !important;
+            }
+            table thead {
+                background: linear-gradient(
+                    135deg,
+                    #4a90d9,
+                    #2c5282
+                ) !important;
+            }
+            .btn-primary {
+                background: linear-gradient(
+                    135deg,
+                    #4a90d9,
+                    #2c5282
+                ) !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="card">
+                <div class="header">
+                    <div>
+                        <h1>Doctor Dashboard</h1>
+                        <p class="subtitle">
+                            Welcome back, <span id="doctorName">Doctor</span>
+                        </p>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-badge">Doctor</span>
+                        <button
+                            class="btn-danger btn-small"
+                            id="logoutBtn"
+                            type="button"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    id="message"
+                    class="message"
+                    role="status"
+                    aria-live="polite"
+                    style="display: none"
+                ></div>
+
+                <div class="section">
+                    <div class="section-title">My Schedule</div>
+                    <button
+                        class="btn-primary btn-small"
+                        id="loadBtn"
+                        type="button"
+                        style="margin-bottom: 10px"
+                    >
+                        Refresh Schedule
+                    </button>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTable">
+                            <tr>
+                                <td colspan="6">Loading appointments...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                const params = new URLSearchParams(window.location.search);
+                const username =
+                    params.get("u") || localStorage.getItem("username") || "";
+                const name =
+                    params.get("name") ||
+                    localStorage.getItem("name") ||
+                    "Doctor";
+
+                if (!username) {
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                document.getElementById("doctorName").textContent = name;
+
+                function showMessage(text, type) {
+                    const msg = document.getElementById("message");
+                    msg.textContent = text;
+                    msg.style.display = "block";
+                    if (type === "error") {
+                        msg.style.background = "#FED7D7";
+                        msg.style.color = "#9B2C2C";
+                        msg.style.border = "1px solid #FC8181";
+                    } else {
+                        msg.style.background = "#C6F6D5";
+                        msg.style.color = "#22543D";
+                        msg.style.border = "1px solid #68D391";
+                    }
+                }
+
+                function loadAppointments() {
+                    fetch(
+                        "/api/appointments?user=" +
+                            encodeURIComponent(username) +
+                            "&role=doctor",
+                    )
+                        .then((r) => r.json())
+                        .then((data) => {
+                            const tbody =
+                                document.getElementById("appointmentsTable");
+                            if (!data.list || data.list.length === 0) {
+                                tbody.innerHTML =
+                                    '<tr><td colspan="6">No appointments scheduled</td></tr>';
+                                return;
+                            }
+                            tbody.innerHTML = "";
+                            data.list.forEach((appt) => {
+                                const tr = document.createElement("tr");
+                                tr.innerHTML = `
+                        <td>${appt.id}</td>
+                        <td>${appt.patientId}</td>
+                        <td>${appt.date}</td>
+                        <td>${appt.time}</td>
+                        <td><span class="status-badge status-${appt.status.toLowerCase()}">${appt.status}</span></td>
+                        <td>
+                            ${
+                                appt.status === "PENDING"
+                                    ? '<button class="btn-success btn-small done-btn" data-id="' +
+                                      appt.id +
+                                      '">Mark Done</button>'
+                                    : "-"
+                            }
+                        </td>
+                    `;
+                                tbody.appendChild(tr);
+                            });
+
+                            document
+                                .querySelectorAll(".done-btn")
+                                .forEach((btn) => {
+                                    btn.addEventListener("click", function () {
+                                        const id = this.getAttribute("data-id");
+                                        markDone(id);
+                                    });
+                                });
+                        })
+                        .catch((err) => {
+                            showMessage("Error loading appointments", "error");
+                        });
+                }
+
+                function markDone(id) {
+                    fetch("/api/cancel", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: "appointmentId=" + id + "&done=1",
+                    })
+                        .then((r) => r.json())
+                        .then((data) => {
+                            if (data.success) {
+                                showMessage(
+                                    "Appointment marked as completed",
+                                    "success",
+                                );
+                                loadAppointments();
+                            } else {
+                                showMessage(
+                                    "Error updating appointment",
+                                    "error",
+                                );
+                            }
+                        })
+                        .catch((err) => {
+                            showMessage("Network error", "error");
+                        });
+                }
+
+                document
+                    .getElementById("loadBtn")
+                    .addEventListener("click", loadAppointments);
+                document
+                    .getElementById("logoutBtn")
+                    .addEventListener("click", function () {
+                        localStorage.clear();
+                        window.location.href = "index.html";
+                    });
+
+                loadAppointments();
+            })();
+        </script>
+    </body>
+</html>
