@@ -125,14 +125,22 @@ public class Server {
                 list = new ArrayList<>();
             }
 
+            // load all users to get names
+            ArrayList<User> users = FileManager.readUsers();
+
             // build JSON manually
             String json = "{\"list\":[";
             for (int i = 0; i < list.size(); i++) {
                 Appointment a = list.get(i);
+                String patientName = getUserName(users, a.getPatientId());
+                String doctorName = getUserName(users, a.getDoctorId());
+
                 json = json + "{\"id\":" + a.getId();
                 json =
                     json + ",\"patientId\":\"" + esc(a.getPatientId()) + "\"";
+                json = json + ",\"patientName\":\"" + esc(patientName) + "\"";
                 json = json + ",\"doctorId\":\"" + esc(a.getDoctorId()) + "\"";
+                json = json + ",\"doctorName\":\"" + esc(doctorName) + "\"";
                 json = json + ",\"date\":\"" + esc(a.getDate()) + "\"";
                 json = json + ",\"time\":\"" + esc(a.getTime()) + "\"";
                 json = json + ",\"status\":\"" + esc(a.getStatus()) + "\"}";
@@ -348,5 +356,16 @@ public class Server {
         } catch (Exception e) {
             return "error".getBytes(StandardCharsets.UTF_8);
         }
+    }
+
+    // helper - gets user name from username
+    static String getUserName(ArrayList<User> users, String username) {
+        for (int i = 0; i < users.size(); i++) {
+            User u = users.get(i);
+            if (u.getUsername().equals(username)) {
+                return u.getName();
+            }
+        }
+        return username; // fallback to username if name not found
     }
 }

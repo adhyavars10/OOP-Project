@@ -73,7 +73,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Patient</th>
+                                <th>Patient Name</th>
                                 <th>Date</th>
                                 <th>Time</th>
                                 <th>Status</th>
@@ -142,7 +142,7 @@
                                 const tr = document.createElement("tr");
                                 tr.innerHTML = `
                         <td>${appt.id}</td>
-                        <td>${appt.patientId}</td>
+                        <td>${appt.patientName || appt.patientId}</td>
                         <td>${appt.date}</td>
                         <td>${appt.time}</td>
                         <td><span class="status-badge status-${appt.status.toLowerCase()}">${appt.status}</span></td>
