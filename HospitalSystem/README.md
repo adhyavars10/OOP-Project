@@ -1,3 +1,13 @@
+OOP PROJECT by :
+Adhya Varshney
+Harshwardhan Mohadikar
+Daksh Dawra
+Anirudh Jain
+Vardhman Jain
+Anish Malhotra
+
+
+
 # Hospital Appointment System
 
 A web-based hospital management system built with Java. Handles appointment booking and management for patients, doctors, and receptionists.
